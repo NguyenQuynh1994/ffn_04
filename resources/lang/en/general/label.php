@@ -1,0 +1,23 @@
+<?php
+return [
+    'get_start' => 'Get Start',
+    'register' => 'Register',
+    'password_confirm_placeholder' => 'Confirm Password',
+    'password_placeholder' => 'Enter Password',
+    'name_placeholder' => 'Enter Name',
+    'email_placeholder' => 'Enter Email',
+    'signup_footbal_new' => 'Signup Football News',
+    'confirm_register' => 'Confirm your account on Football Framgia News!',
+    'email_address' => 'E-Mail Address',
+    'password' => 'Password',
+    'remember_me' => 'Remember me',
+    'reset_password' => 'Forgot Your Password?',
+    'login' => 'Login',
+    'logout' => 'Logout',
+    'facebook' => 'Facebook',
+    'github' => 'Github',
+    'google' => 'Google',
+    'name' => 'Name',
+    'password_confirm' => 'Confirm password',
+    'signup_football_new' => 'Active my account of Football Framgia News!',
+];

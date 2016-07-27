@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
+use App\Models\User;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use Illuminate\Http\Request;
+use Auth;
+use Mail;
+use Hash;
 
 class AuthController extends Controller
 {
@@ -29,7 +35,6 @@ class AuthController extends Controller
      * @var string
      */
     protected $redirectTo = '/';
-
     /**
      * Create a new authentication controller instance.
      *
@@ -68,5 +73,74 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
         ]);
+    }
+
+    public function getLogin()
+    {
+        return view('auth.login');
+    }
+
+    public function postLogin(LoginRequest $request)
+    {
+        $validator = Validator::make($request->all(), $request->rules());
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        } else {
+            $email = $request->input('email');
+            $password = $request->input('password');
+            if (Auth::attempt(['email' => $email, 'password' => $password, 'confirmed' => 1], $request->has('remember'))) {
+                return redirect('/');
+            } else {
+                return redirect()->back()->withErrors(trans('general/message.login_error'));
+            }
+        }
+    }
+
+    public function getRegister()
+    {
+        return view('auth.register');
+    }
+
+    public function postRegister(RegisterRequest $request)
+    {
+        return $this->register($request);
+    }
+    public function register(RegisterRequest $request)
+    {
+        $validator = Validator::make($request->all(), $request->rules());
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        } else {
+            $confirmation_code = str_random(10);
+            $user = User::create([
+                'email' => $request->email,
+                'name' => $request->name,
+                'password' => Hash::make($request->password),
+                'confirmed' => 0,
+                'confirmation_code' => $confirmation_code,
+            ]);
+            $data = [
+                'email' => $request->email,
+                'name' => $request->name,
+                'confirmation_code' => $confirmation_code,
+            ];
+            Mail::send('emails.welcome', $data, function ($message) use ($data){
+                $message->to($data['email'], $data['name'])->subject(trans('confirm_register'));
+            });
+            return redirect()->back()->withErrors(trans('general/message.register_active'));
+        }
+    }
+
+    public function confirm($confirmation_code)
+    {
+        $user = User::confirmationCode($confirmation_code)->first();
+        $user->update([
+            'confirmed' => 1,
+            'confirmation_code' => ''
+        ]);
+        Auth::login($user);
+        return redirect('/');
     }
 }

@@ -21,6 +21,8 @@ class User extends Authenticatable
         'password',
         'role',
         'point',
+        'confirmed',
+        'confirmation_code'
     ];
 
     /**
@@ -52,8 +54,34 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class, 'user_id');
     }
+
     public function socialAccount()
     {
         return $this->belongsTo(SocialAccount::class);
+    }
+
+    public function scopeUser($query)
+    {
+        return $query->where('role', 0);
+    }
+
+    public function scopeAdmin($query)
+    {
+        return $query->where('role', 1);
+    }
+
+    public function scopeTeam($query)
+    {
+        return $query->where('role', 2);
+    }
+
+    public function scopeConfirmationCode($query, $confirmationCode)
+    {
+        return $query->where('confirmation_code', $confirmationCode);
+    }
+
+    public function scopeUserEmail($query, $socialEmail)
+    {
+        return $query->where('email', $socialEmail);
     }
 }
